@@ -1,0 +1,42 @@
+#cloud-config
+
+# Add apt repository for Java install
+apt_sources:
+ - source: ppa:webupd8team/java
+
+# Run 'apt-get update'
+apt_update: true
+
+# Run 'apt-get upgrade'
+apt_upgrade: true
+
+# Reboot after package install/upgrade if needed (e.g. if kernel update)
+apt_reboot_if_required: true
+
+# Install additional packages
+packages:
+ - wget
+ - git
+ - curl
+ - tomcat7
+
+# Create users - uncomment and update username and ssh key to use
+#users:
+# - name: <add-username-here>
+#   ssh_authorized_keys:
+#     - ssh-rsa <add-ssh-key-here>
+#   sudo: ['ALL=(ALL) NOPASSWD:ALL']
+#   groups: sudo
+#   shell: /bin/bash
+
+# Install Java and Fedora - consider updating -Xmx value based on instance memory capacity
+runcmd:
+ - echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+ - apt-get -y -q install oracle-java8-installer
+ - update-java-alternatives -s java-8-oracle
+ - echo 'JAVA_HOME="/usr/lib/jvm/java-8-oracle"' >> /etc/default/tomcat7
+ - echo 'JAVA_OPTS="-Djava.awt.headless=true -Dfile.encoding=UTF-8 -server -Xms512m -Xmx2g -XX:NewSize=256m -XX:MaxNewSize=2g -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=2g -XX:+DisableExplicitGC -Dfcrepo.home=/mnt/fcrepo -Xloggc:/tmp/java-gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps"' >> /etc/default/tomcat7
+ - mkdir /mnt/fcrepo
+ - chown tomcat7 /mnt/fcrepo
+ - wget "https://github.com/fcrepo4/fcrepo4/releases/download/fcrepo-4.5.0/fcrepo-webapp-4.5.0.war" -O /var/lib/tomcat7/webapps/fcrepo.war
+ - service tomcat7 restart
