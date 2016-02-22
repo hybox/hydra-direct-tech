@@ -3,7 +3,7 @@
 # AWS instance type (e.g. m3.medium, r3.large, etc)
 type=$1
 
-# IAM role to attache to instance
+# IAM role to attach to instance
 iamrole=$2
 
 # EC2 security group
